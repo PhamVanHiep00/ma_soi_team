@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trợ Lý Chia Bài Ma Sói Realtime v3.5</title>
+    <title>Trợ Lý Chia Bài Ma Sói Realtime v3.6</title>
     <style>
         body { font-family: Arial, sans-serif; background: #1a1a2e; color: #fff; text-align: center; padding: 20px; margin: 0; }
         .container { max-width: 500px; margin: 20px auto; background: #162447; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5); position: relative; }
@@ -11,7 +11,10 @@
         .admin-tool-icon { position: absolute; top: 15px; right: 15px; font-size: 24px; cursor: pointer; background: rgba(255, 255, 255, 0.1); padding: 5px 8px; border-radius: 50%; transition: 0.3s; z-index: 10; }
         .admin-tool-icon:hover { background: rgba(255, 255, 255, 0.3); transform: rotate(45deg); }
 
-        /* Thiết kế nút Rời phòng mới: Đẹp, gọn gàng, đặt ở khu điều khiển bên dưới */
+        /* Nút mở thư viện bài */
+        .btn-wiki-open { background: #f39c12; color: #fff; font-weight: bold; margin: 10px 0; border: none; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; box-sizing: border-box; font-size: 15px; }
+        .btn-wiki-open:hover { background: #f1c40f; }
+
         .btn-leave-room { background: #34495e; color: #fff; border: 1px solid #415b76; padding: 10px 20px; margin-top: 10px; border-radius: 5px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; box-sizing: border-box; }
         .btn-leave-room:hover { background: #e74c3c; border-color: #e74c3c; }
 
@@ -49,6 +52,22 @@
         
         input[type="text"], input[type="number"] { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #1f4068; background: #1a1a2e; color: #fff; font-size: 16px; box-sizing: border-box; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        /* MODAL POPUP THƯ VIỆN BÀI */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s ease; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content { background: #162447; width: 90%; max-width: 460px; max-height: 80vh; border-radius: 12px; padding: 20px; box-shadow: 0px 0px 25px rgba(0,0,0,0.7); overflow-y: auto; text-align: left; border: 1px solid #f39c12; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f39c12; padding-bottom: 10px; margin-bottom: 15px; }
+        .modal-title { font-size: 20px; font-weight: bold; color: #f39c12; margin: 0; }
+        .modal-close { font-size: 28px; font-weight: bold; cursor: pointer; color: #aaa; line-height: 1; }
+        .modal-close:hover { color: #fff; }
+        
+        /* Chi tiết các lá bài trong thư viện */
+        .wiki-item { background: #1f4068; padding: 12px; border-radius: 6px; margin-bottom: 12px; border-left: 5px solid #fff; }
+        .wiki-item.wolf-side { border-left-color: #ff4a6e; }
+        .wiki-item.village-side { border-left-color: #00bcd4; }
+        .wiki-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .wiki-desc { font-size: 13px; color: #ddd; line-height: 1.4; }
     </style>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -70,6 +89,8 @@
         <button id="btn-join-existing" class="btn-main" onclick="handleJoinRoom(false)">Vào Phòng Có Sẵn 🚪</button>
         <div style="margin: 10px 0; color: #7f8c8d; font-size: 14px;">— HOẶC —</div>
         <button id="btn-create-new" class="btn-sub" onclick="handleJoinRoom(true)">Tự Tạo Phòng Mới ✨</button>
+
+        <button class="btn-wiki-open" onclick="openWikiModal()">📚 Thư Viện Chức Năng Bài</button>
     </div>
 
     <div id="screen-room" class="hidden">
@@ -89,6 +110,7 @@
             <button id="btn-reset-game" class="btn-reset hidden" onclick="resetGameFirebase()">CHƠI VÁN MỚI 🔄</button>
         </div>
 
+        <button class="btn-wiki-open" onclick="openWikiModal()">📚 Thư Viện Chức Năng Bài</button>
         <button class="btn-leave-room" onclick="leaveRoom()">🏃‍♂️ Rời Khỏi Phòng</button>
 
         <hr style="border: 0; border-top: 1px dashed #444; margin: 20px 0;">
@@ -105,6 +127,17 @@
                 <div class="card-detail" id="display-role-desc">Hệ thống đang xáo bài...</div>
             </div>
         </div>
+    </div>
+</div>
+
+<div id="wiki-modal" class="modal-overlay" onclick="closeWikiModalByClickOutside(event)">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">📚 Cẩm Nang Chức Năng Bài</h4>
+            <span class="modal-close" onclick="closeWikiModal()">&times;</span>
+        </div>
+        <div id="wiki-list-container">
+            </div>
     </div>
 </div>
 
@@ -144,6 +177,41 @@
         "idiot": { name: "Chàng Ngốc 🤡", isWolfPhe: false, desc: "<b>• Phe:</b> Dân làng<br>• Nếu bị bỏ phiếu treo cổ ban ngày, bạn lật bài để được tha bổng, vẫn sống nhưng mất quyền bỏ phiếu về sau." },
         "villager": { name: "Dân Làng 🧑‍🌾", isWolfPhe: false, desc: "<b>• Phe:</b> Dân làng<br>• Đêm đi ngủ, ngày tích cực thảo luận, biểu quyết treo cổ kẻ tình nghi." }
     };
+
+    // Khởi tạo danh sách thư viện tự động từ dictionary bài
+    function buildWikiLibrary() {
+        const container = document.getElementById("wiki-list-container");
+        container.innerHTML = "";
+        
+        Object.keys(roleDictionary).forEach(key => {
+            const role = roleDictionary[key];
+            const div = document.createElement("div");
+            div.className = `wiki-item ${role.isWolfPhe ? 'wolf-side' : 'village-side'}`;
+            
+            div.innerHTML = `
+                <div class="wiki-name">
+                    <span>${role.name}</span>
+                    <span style="font-size:11px; color:${role.isWolfPhe ? '#ff4a6e' : '#00bcd4'}">
+                        ${role.isWolfPhe ? 'Phe Sói' : 'Phe Dân'}
+                    </span>
+                </div>
+                <div class="wiki-desc">${role.desc}</div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // Các hàm Đóng/Mở Modal Thư Viện
+    function openWikiModal() {
+        buildWikiLibrary();
+        document.getElementById("wiki-modal").classList.add("active");
+    }
+    function closeWikiModal() {
+        document.getElementById("wiki-modal").classList.remove("active");
+    }
+    function closeWikiModalByClickOutside(e) {
+        if (e.target.id === "wiki-modal") closeWikiModal();
+    }
 
     const urlParams = new URLSearchParams(window.location.search);
     const roomIdParam = urlParams.get('room');
