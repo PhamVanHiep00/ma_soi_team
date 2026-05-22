@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trợ Lý Chia Bài Ma Sói Realtime v3.6</title>
+    <title>Trợ Lý Chia Bài Ma Sói Realtime v4.5</title>
     <style>
         body { font-family: Arial, sans-serif; background: #1a1a2e; color: #fff; text-align: center; padding: 20px; margin: 0; }
         .container { max-width: 500px; margin: 20px auto; background: #162447; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5); position: relative; }
@@ -11,14 +11,22 @@
         .admin-tool-icon { position: absolute; top: 15px; right: 15px; font-size: 24px; cursor: pointer; background: rgba(255, 255, 255, 0.1); padding: 5px 8px; border-radius: 50%; transition: 0.3s; z-index: 10; }
         .admin-tool-icon:hover { background: rgba(255, 255, 255, 0.3); transform: rotate(45deg); }
 
-        /* Nút mở thư viện bài */
-        .btn-wiki-open { background: #f39c12; color: #fff; font-weight: bold; margin: 10px 0; border: none; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; box-sizing: border-box; font-size: 15px; }
-        .btn-wiki-open:hover { background: #f1c40f; }
+        /* Bố cục dàn hàng ngang cho 2 nút Vào/Tạo phòng và Cụm tiện ích */
+        .control-group { display: flex; gap: 10px; margin: 8px 0; }
+        .control-group button { flex: 1; margin: 0 !important; }
 
-        .btn-leave-room { background: #34495e; color: #fff; border: 1px solid #415b76; padding: 10px 20px; margin-top: 10px; border-radius: 5px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; box-sizing: border-box; }
+        /* Nút Thư Viện Bài To ở Màn Hình Chính */
+        .btn-wiki-open-main { background: #f39c12; color: #fff; font-weight: bold; margin-top: 10px; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; box-sizing: border-box; font-size: 15px; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
+        .btn-wiki-open-main:hover { background: #f1c40f; }
+
+        /* Nút tiện ích trong phòng */
+        .btn-wiki-open-room { background: #db8112; font-size: 14px; }
+        .btn-wiki-open-room:hover { background: #b8690b; }
+        .btn-leave-room { background: #34495e; font-size: 14px; border: 1px solid #415b76; }
         .btn-leave-room:hover { background: #e74c3c; border-color: #e74c3c; }
 
-        button { color: white; border: none; padding: 12px 20px; margin: 8px 0; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; box-sizing: border-box; }
+        button { color: white; border: none; padding: 12px 20px; margin: 8px 0; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; box-sizing: border-box; transition: all 0.2s ease; }
+        button:active { transform: scale(0.98); }
         .btn-main { background: #e43f5a; }
         .btn-main:hover { background: #ff4a6e; }
         .btn-sub { background: #1f4068; border: 1px solid #e43f5a; }
@@ -30,25 +38,40 @@
         .btn-ready:hover { background: #27ae60; }
         .btn-unready { background: #f39c12; }
         .btn-unready:hover { background: #d35400; }
-        .btn-reset { background: #9b59b6; margin-top: 15px; }
+        .btn-reset { background: #9b59b6; margin-top: 10px; }
         .btn-reset:hover { background: #8e44ad; }
+        
+        /* Các nút phục vụ tính năng Vote nâng cao */
+        .btn-vote-action { background: #e67e22; margin: 5px 0; }
+        .btn-vote-action:hover { background: #d35400; }
+        .btn-vote-confirm { background: #2ecc71; margin: 5px 0; border: 2px solid #fff; }
+        .btn-vote-confirm:hover { background: #27ae60; }
+        
+        .btn-vote-player { background: #c0392b; width: auto; padding: 4px 10px; font-size: 12px; margin: 0; float: right; border: none; color: #fff; font-weight: bold; border-radius: 3px; cursor: pointer; }
+        .btn-vote-player:hover { background: #e74c3c; }
+        .btn-vote-player.voted { background: #27ae60; }
 
         .player-list { list-style: none; padding: 0; text-align: left; background: #1f4068; border-radius: 5px; padding: 10px; margin: 15px 0; }
-        .player-list li { padding: 10px; border-bottom: 1px solid #162447; display: flex; justify-content: space-between; align-items: center; }
+        .player-list li { padding: 10px; border-bottom: 1px solid #162447; display: flex; justify-content: space-between; align-items: center; color: #fff; transition: 0.2s; }
         .player-list li:last-child { border-bottom: none; }
+        
+        /* Khi bị Quản trò treo cổ hóa đen xì */
+        .player-list li.has-votes { color: #000000 !important; font-weight: bold; background: #7f8c8d !important; border-radius: 4px; text-decoration: line-through; }
         
         .card-box { margin-top: 20px; padding: 20px; background: #222831; border-radius: 10px; display: none; text-align: left; border: 2px solid #e43f5a; box-sizing: border-box; }
         .card-title { font-size: 26px; font-weight: bold; text-align: center; margin-bottom: 10px; color: #ffca28; }
         .card-detail { font-size: 14px; line-height: 1.5; color: #eeeeee; background: #393e46; padding: 10px; border-radius: 5px; }
         
-        .hidden { display: none; }
-        .badge { padding: 4px 10px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-left: 5px; display: inline-block; }
-        .badge-me { background: #3498db; color: #fff; } 
-        .badge-host { background: #e43f5a; color: #fff; }
-        .badge-ready { background: #2ecc71; color: #fff; }
-        .badge-waiting { background: #7f8c8d; color: #fff; }
-        .badge-spec { background: #9b59b6; color: #fff; }
+        .hidden { display: none !important; }
+        .badge { padding: 4px 10px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-left: 5px; display: inline-block; color: #fff; }
+        .badge-me { background: #3498db; } 
+        .badge-host { background: #6c5ce7; }
+        .badge-ready { background: #2ecc71; }
+        .badge-waiting { background: #7f8c8d; }
+        .badge-spec { background: #9b59b6; }
+        .badge-dead { background: #000000; color: #ffffff; border: 1px solid #fff; }
         .badge-hidden { background: #34495e; color: #bdc3c7; }
+        .badge-vote-count { background: #e74c3c; color: #fff; }
         
         input[type="text"], input[type="number"] { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #1f4068; background: #1a1a2e; color: #fff; font-size: 16px; box-sizing: border-box; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -62,7 +85,6 @@
         .modal-close { font-size: 28px; font-weight: bold; cursor: pointer; color: #aaa; line-height: 1; }
         .modal-close:hover { color: #fff; }
         
-        /* Chi tiết các lá bài trong thư viện */
         .wiki-item { background: #1f4068; padding: 12px; border-radius: 6px; margin-bottom: 12px; border-left: 5px solid #fff; }
         .wiki-item.wolf-side { border-left-color: #ff4a6e; }
         .wiki-item.village-side { border-left-color: #00bcd4; }
@@ -76,7 +98,7 @@
 <body>
 
 <div class="container">
-    <div class="admin-tool-icon" onclick="promptAdminCode()" title="Kích hoạt chế độ Quản Trò">⚙️</div>
+    <div class="admin-tool-icon" onclick="promptAdminCode()" title="Kích hoạt Mắt Thần Cheat Bài">⚙️</div>
 
     <h2>🐺 Trợ Lý Ma Sói Realtime 🐺</h2>
     <p id="admin-status" style="color: #ffca28; font-size: 13px; margin-bottom: 20px;">Chế độ: Người chơi thông thường</p>
@@ -86,15 +108,15 @@
         <input type="text" id="input-username" placeholder="Nhập tên hiển thị của bạn..." maxlength="15">
         <input type="number" id="input-room-id" placeholder="Nhập mã phòng (Gồm 4 chữ số)..." oninput="if(this.value.length>6) this.value=this.value.slice(0,6);">
         
-        <button id="btn-join-existing" class="btn-main" onclick="handleJoinRoom(false)">Vào Phòng Có Sẵn 🚪</button>
-        <div style="margin: 10px 0; color: #7f8c8d; font-size: 14px;">— HOẶC —</div>
-        <button id="btn-create-new" class="btn-sub" onclick="handleJoinRoom(true)">Tự Tạo Phòng Mới ✨</button>
+        <div class="control-group">
+            <button id="btn-join-existing" class="btn-main" onclick="handleJoinRoom(false)">Vào Phòng Có Sẵn 🚪</button>
+            <button id="btn-create-new" class="btn-sub" onclick="handleJoinRoom(true)">Tự Tạo Phòng Mới ✨</button>
+        </div>
 
-        <button class="btn-wiki-open" onclick="openWikiModal()">📚 Thư Viện Chức Năng Bài</button>
+        <button class="btn-wiki-open-main" onclick="openWikiModal()">📚 Thư Viện Chức Năng Bài</button>
     </div>
 
     <div id="screen-room" class="hidden">
-
         <h3>Mã Phòng: <span id="room-id-display" style="color:#e43f5a;">xxxx</span></h3>
         <p id="room-state-text" style="font-style: italic; color: #aaa; font-size: 13px;"></p>
         
@@ -106,12 +128,16 @@
         </div>
 
         <div id="host-controls" class="hidden">
-            <button id="btn-start-game" class="btn-ready" onclick="startDealingFirebase()" disabled>Bắt Đầu Game (Đợi mọi người sẵn sàng)</button>
+            <button id="btn-start-game" class="btn-ready" onclick="startDealingFirebase()" disabled>Bắt Đầu Game (Đợi người chơi sẵn sàng)</button>
+            <button id="btn-toggle-vote-state" class="btn-vote-action" onclick="toggleVoteStateFirebase()">MỞ VOTE TREO CỔ 📢</button>
+            <button id="btn-confirm-vote" class="btn-vote-confirm hidden" onclick="confirmVoteResultFirebase()">CHỐT KẾT QUẢ VOTE OK ✅</button>
             <button id="btn-reset-game" class="btn-reset hidden" onclick="resetGameFirebase()">CHƠI VÁN MỚI 🔄</button>
         </div>
 
-        <button class="btn-wiki-open" onclick="openWikiModal()">📚 Thư Viện Chức Năng Bài</button>
-        <button class="btn-leave-room" onclick="leaveRoom()">🏃‍♂️ Rời Khỏi Phòng</button>
+        <div class="control-group" style="margin-top: 15px;">
+            <button class="btn-wiki-open-room" onclick="openWikiModal()">📚 Xem Luật Bài</button>
+            <button class="btn-leave-room" onclick="leaveRoom()">🏃‍♂️ Rời Khỏi Phòng</button>
+        </div>
 
         <hr style="border: 0; border-top: 1px dashed #444; margin: 20px 0;">
 
@@ -119,7 +145,7 @@
             <button id="btn-view-card" class="btn-main"
                     onmousedown="showCard()" onmouseup="hideCard()" 
                     ontouchstart="showCard()" ontouchend="hideCard()">
-                NHẤN GIỮ ĐỂ XEM LÁ BÀI CỦA BẠN
+                👁️ NHẤN GIỮ ĐỂ XEM LÁ BÀI CỦA BẠN 👁️
             </button>
             
             <div id="card-display" class="card-box">
@@ -136,12 +162,12 @@
             <h4 class="modal-title">📚 Cẩm Nang Chức Năng Bài</h4>
             <span class="modal-close" onclick="closeWikiModal()">&times;</span>
         </div>
-        <div id="wiki-list-container">
-            </div>
+        <div id="wiki-list-container"></div>
     </div>
 </div>
 
 <script>
+    // Cấu hình kết nối Realtime Database Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyD7fclfpNYEccgFuQKmtmOzXjEEOap3GoI",
         authDomain: "masoi123.firebaseapp.com",
@@ -178,44 +204,24 @@
         "villager": { name: "Dân Làng 🧑‍🌾", isWolfPhe: false, desc: "<b>• Phe:</b> Dân làng<br>• Đêm đi ngủ, ngày tích cực thảo luận, biểu quyết treo cổ kẻ tình nghi." }
     };
 
-    // Khởi tạo danh sách thư viện tự động từ dictionary bài
     function buildWikiLibrary() {
         const container = document.getElementById("wiki-list-container");
         container.innerHTML = "";
-        
         Object.keys(roleDictionary).forEach(key => {
             const role = roleDictionary[key];
             const div = document.createElement("div");
             div.className = `wiki-item ${role.isWolfPhe ? 'wolf-side' : 'village-side'}`;
-            
-            div.innerHTML = `
-                <div class="wiki-name">
-                    <span>${role.name}</span>
-                    <span style="font-size:11px; color:${role.isWolfPhe ? '#ff4a6e' : '#00bcd4'}">
-                        ${role.isWolfPhe ? 'Phe Sói' : 'Phe Dân'}
-                    </span>
-                </div>
-                <div class="wiki-desc">${role.desc}</div>
-            `;
+            div.innerHTML = `<div class="wiki-name"><span>${role.name}</span><span style="font-size:11px; color:${role.isWolfPhe ? '#ff4a6e' : '#00bcd4'}">${role.isWolfPhe ? 'Phe Sói' : 'Phe Dân'}</span></div><div class="wiki-desc">${role.desc}</div>`;
             container.appendChild(div);
         });
     }
 
-    // Các hàm Đóng/Mở Modal Thư Viện
-    function openWikiModal() {
-        buildWikiLibrary();
-        document.getElementById("wiki-modal").classList.add("active");
-    }
-    function closeWikiModal() {
-        document.getElementById("wiki-modal").classList.remove("active");
-    }
-    function closeWikiModalByClickOutside(e) {
-        if (e.target.id === "wiki-modal") closeWikiModal();
-    }
+    function openWikiModal() { buildWikiLibrary(); document.getElementById("wiki-modal").classList.add("active"); }
+    function closeWikiModal() { document.getElementById("wiki-modal").classList.remove("active"); }
+    function closeWikiModalByClickOutside(e) { if (e.target.id === "wiki-modal") closeWikiModal(); }
 
     const urlParams = new URLSearchParams(window.location.search);
     const roomIdParam = urlParams.get('room');
-
     if (roomIdParam) {
         document.getElementById("input-room-id").value = roomIdParam;
         document.getElementById("login-title").innerText = "Bạn nhận được lời mời vào phòng: " + roomIdParam;
@@ -235,16 +241,17 @@
         if (isCreatingNew) {
             currentRoomId = Math.floor(1000 + Math.random() * 9000).toString();
             isHost = true;
-            myCurrentState = "ready";
+            myCurrentState = "host";
 
             const userRef = database.ref('rooms/' + currentRoomId + '/players/' + myPlayerId);
             userRef.onDisconnect().remove();
 
             database.ref('rooms/' + currentRoomId).set({
                 status: "waiting",
+                voteStatus: "closed",
                 hostId: myPlayerId,
                 players: {
-                    [myPlayerId]: { name: username, state: "ready", roleKey: "", isHost: true }
+                    [myPlayerId]: { name: username, state: "host", roleKey: "Host_QuanTro", isHost: true, votedFor: "", isDead: false }
                 }
             }).then(() => {
                 window.history.pushState({}, '', '?room=' + currentRoomId);
@@ -259,25 +266,20 @@
 
             database.ref('rooms/' + currentRoomId).once('value', (snapshot) => {
                 const roomData = snapshot.val();
-                
                 if (!roomData) {
-                    alert("Phòng số " + currentRoomId + " không tồn tại hoặc đã bị hủy!");
+                    alert("Phòng số " + currentRoomId + " không tồn tại!");
                     return;
                 }
 
                 if (roomData.status === "playing") {
                     myCurrentState = "spectator";
-                    alert("Phòng đang đấu giữa chừng! Bạn sẽ tham gia với tư cách Khán giả xem bài.");
+                    alert("Phòng đang đấu! Bạn tham gia với tư cách Khán giả.");
                 } else {
                     myCurrentState = "waiting";
                 }
 
-                if (!roomData.players || Object.keys(roomData.players).length === 0) {
-                    isHost = true;
-                    myCurrentState = "ready";
-                } else {
-                    isHost = false;
-                }
+                isHost = (!roomData.players || Object.keys(roomData.players).length === 0);
+                if(isHost) myCurrentState = "host";
 
                 const userRef = database.ref('rooms/' + currentRoomId + '/players/' + myPlayerId);
                 userRef.onDisconnect().remove();
@@ -285,8 +287,10 @@
                 userRef.set({
                     name: username,
                     state: myCurrentState,
-                    roleKey: "",
-                    isHost: isHost
+                    roleKey: isHost ? "Host_QuanTro" : "",
+                    isHost: isHost,
+                    votedFor: "",
+                    isDead: false
                 }).then(() => {
                     window.history.pushState({}, '', '?room=' + currentRoomId);
                     initRoomListener();
@@ -297,43 +301,107 @@
 
     function leaveRoom() {
         if (!currentRoomId || !myPlayerId) return;
-        
         if (confirm("Bạn có chắc chắn muốn rời khỏi phòng này không?")) {
             database.ref('rooms/' + currentRoomId).off();
-
             database.ref('rooms/' + currentRoomId + '/players/' + myPlayerId).remove().then(() => {
-                currentRoomId = "";
-                isHost = false;
-                myCurrentState = "waiting";
-
+                currentRoomId = ""; isHost = false; myCurrentState = "waiting";
                 window.history.pushState({}, '', window.location.pathname);
-
                 document.getElementById("screen-room").classList.add("hidden");
                 document.getElementById("screen-login").classList.remove("hidden");
-                document.getElementById("login-title").innerText = "Cấu hình thông tin bàn chơi";
                 document.getElementById("input-room-id").value = "";
-                
                 const btnReady = document.getElementById("btn-ready-toggle");
-                btnReady.innerText = "SẴN SÀNG";
-                btnReady.className = "btn-ready";
+                btnReady.innerText = "SẴN SÀNG"; btnReady.className = "btn-ready";
             });
         }
     }
 
     function toggleReady() {
         if (isHost || myCurrentState === "spectator") return;
-
         const btn = document.getElementById("btn-ready-toggle");
         if (myCurrentState === "waiting") {
-            myCurrentState = "ready";
-            btn.innerText = "HỦY SẴN SÀNG";
-            btn.className = "btn-unready";
+            myCurrentState = "ready"; btn.innerText = "HỦY SẴN SÀNG"; btn.className = "btn-unready";
         } else {
-            myCurrentState = "waiting";
-            btn.innerText = "SẴN SÀNG";
-            btn.className = "btn-ready";
+            myCurrentState = "waiting"; btn.innerText = "SẴN SÀNG"; btn.className = "btn-ready";
         }
         database.ref('rooms/' + currentRoomId + '/players/' + myPlayerId + '/state').set(myCurrentState);
+    }
+
+    function submitVote(targetPlayerId) {
+        database.ref('rooms/' + currentRoomId + '/players').once('value', (snap) => {
+            const players = snap.val();
+            if(!players) return;
+            
+            if(players[myPlayerId] && players[myPlayerId].isDead) {
+                alert("Bạn đã chết (bị hóa đen tên), không có quyền bỏ phiếu nữa!");
+                return;
+            }
+
+            const currentVote = players[myPlayerId].votedFor || "";
+            const newVote = (currentVote === targetPlayerId) ? "" : targetPlayerId;
+            database.ref('rooms/' + currentRoomId + '/players/' + myPlayerId + '/votedFor').set(newVote);
+        });
+    }
+
+    function toggleVoteStateFirebase() {
+        database.ref('rooms/' + currentRoomId + '/voteStatus').once('value', (snapshot) => {
+            const currentVoteStatus = snapshot.val() || "closed";
+            const nextStatus = (currentVoteStatus === "closed") ? "open" : "closed";
+            
+            let updates = {};
+            updates['rooms/' + currentRoomId + '/voteStatus'] = nextStatus;
+            
+            database.ref('rooms/' + currentRoomId + '/players').once('value', (pSnap) => {
+                const players = pSnap.val();
+                if (players && nextStatus === "closed") {
+                    Object.keys(players).forEach(id => {
+                        updates['rooms/' + currentRoomId + '/players/' + id + '/votedFor'] = "";
+                    });
+                }
+                database.ref().update(updates);
+            });
+        });
+    }
+
+    function confirmVoteResultFirebase() {
+        database.ref('rooms/' + currentRoomId + '/players').once('value', (snapshot) => {
+            const players = snapshot.val();
+            if (!players) return;
+
+            let voteMap = {};
+            Object.keys(players).forEach(id => {
+                const target = players[id].votedFor;
+                if (target) {
+                    voteMap[target] = (voteMap[target] || 0) + 1;
+                }
+            });
+
+            let maxVotes = 0;
+            Object.keys(voteMap).forEach(id => {
+                if (voteMap[id] > maxVotes) maxVotes = voteMap[id];
+            });
+
+            if (maxVotes === 0) {
+                alert("Hiện tại chưa có ai bỏ phiếu cả, không thể chốt!");
+                return;
+            }
+
+            let updates = {};
+            let hangedNames = [];
+
+            Object.keys(players).forEach(id => {
+                updates['rooms/' + currentRoomId + '/players/' + id + '/votedFor'] = "";
+                if (voteMap[id] === maxVotes) {
+                    updates['rooms/' + currentRoomId + '/players/' + id + '/isDead'] = true;
+                    hangedNames.push(players[id].name);
+                }
+            });
+
+            updates['rooms/' + currentRoomId + '/voteStatus'] = "closed";
+
+            database.ref().update(updates).then(() => {
+                alert(`📢 QUẢN TRÒ ĐÃ CHỐT!\nNgười bị treo cổ: ${hangedNames.join(", ")} (${maxVotes} phiếu).\nTên họ đã chuyển thành MÀU ĐEN và mất quyền biểu quyết về sau!`);
+            });
+        });
     }
 
     function renderPlayerListUI(data) {
@@ -343,13 +411,25 @@
         let totalCount = 0;
         let activePlayersCount = 0; 
         let readyCount = 0;
+        
+        let voteMap = {};
+        if (data.players) {
+            Object.keys(data.players).forEach(id => {
+                const votedTarget = data.players[id].votedFor;
+                if (votedTarget) {
+                    voteMap[votedTarget] = (voteMap[votedTarget] || 0) + 1;
+                }
+            });
+        }
 
         if (data.players) {
             Object.keys(data.players).forEach((key) => {
                 totalCount++;
                 const p = data.players[key];
+                const receivedVotes = voteMap[key] || 0;
                 
                 let li = document.createElement("li");
+                if (p.isDead) li.classList.add("has-votes");
                 
                 let nameSpan = document.createElement("span");
                 nameSpan.innerText = p.name;
@@ -357,32 +437,36 @@
 
                 let badgeGroup = document.createElement("div");
 
+                if (receivedVotes > 0 && data.voteStatus === "open") {
+                    let bVote = document.createElement("span");
+                    bVote.className = "badge badge-vote-count";
+                    bVote.innerText = `💀 ${receivedVotes} Phiếu`;
+                    badgeGroup.appendChild(bVote);
+                }
+
                 if (key === myPlayerId) {
-                    let bMe = document.createElement("span"); 
-                    bMe.className = "badge badge-me"; 
-                    bMe.innerText = "Bạn"; 
-                    badgeGroup.appendChild(bMe);
+                    let bMe = document.createElement("span"); bMe.className = "badge badge-me"; bMe.innerText = "Bạn"; badgeGroup.appendChild(bMe);
                 }
 
                 if (p.isHost) {
-                    let b = document.createElement("span"); b.className = "badge badge-host"; b.innerText = "Chủ Bàn"; badgeGroup.appendChild(b);
-                    activePlayersCount++;
+                    let b = document.createElement("span"); b.className = "badge badge-host"; b.innerText = "🎙️ Quản Trò"; badgeGroup.appendChild(b);
+                } else if (p.isDead) {
+                    let b = document.createElement("span"); b.className = "badge badge-dead"; b.innerText = "Đã Chết ☠️"; badgeGroup.appendChild(b);
                 } else if (p.state === "spectator") {
                     let b = document.createElement("span"); b.className = "badge badge-spec"; b.innerText = "Khán Giả"; badgeGroup.appendChild(b);
                 } else {
                     activePlayersCount++;
                     if (p.state === "ready") readyCount++;
-
                     let b = document.createElement("span");
                     b.className = p.state === "ready" ? "badge badge-ready" : "badge badge-waiting";
-                    b.innerText = p.state === "ready" ? "Sẵn Sàng" : "Chưa Sẵn Sàng";
+                    b.innerText = p.state === "ready" ? "Sẵn Sàng" : "Chưa Sẵn";
                     badgeGroup.appendChild(b);
                 }
 
-                if (data.status === "playing" && p.roleKey) {
+                if (data.status === "playing" && p.roleKey && p.roleKey !== "Host_QuanTro") {
                     let bRole = document.createElement("span");
                     bRole.className = "badge";
-                    if (isAdminActive) {
+                    if (isAdminActive || isHost) {
                         bRole.innerText = roleDictionary[p.roleKey].name;
                         bRole.style.color = roleDictionary[p.roleKey].isWolfPhe ? "#ff4a6e" : "#64b5f6";
                     } else {
@@ -392,6 +476,23 @@
                     badgeGroup.appendChild(bRole);
                 }
 
+                const iAmDead = (data.players[myPlayerId] && data.players[myPlayerId].isDead);
+                if (data.status === "playing" && data.voteStatus === "open" && key !== myPlayerId && !p.isHost && !p.isDead && !iAmDead && p.state !== "spectator") {
+                    let btnVote = document.createElement("button");
+                    btnVote.className = "btn-vote-player";
+                    
+                    const imVotingThis = (data.players[myPlayerId] && data.players[myPlayerId].votedFor === key);
+                    if (imVotingThis) {
+                        btnVote.innerText = "Đang Chọn ✅";
+                        btnVote.classList.add("voted");
+                    } else {
+                        btnVote.innerText = "Vote 💀";
+                    }
+                    
+                    btnVote.onclick = () => submitVote(key);
+                    badgeGroup.appendChild(btnVote);
+                }
+
                 li.appendChild(badgeGroup);
                 playerListUl.appendChild(li);
             });
@@ -399,39 +500,61 @@
 
         document.getElementById("player-count").innerText = totalCount;
 
+        if (isHost) {
+            const btnVoteState = document.getElementById("btn-toggle-vote-state");
+            const btnConfirmVote = document.getElementById("btn-confirm-vote");
+
+            if (data.status === "playing") {
+                btnConfirmVote.classList.remove("hidden");
+                if (data.voteStatus === "open") {
+                    btnVoteState.innerText = "HỦY / ĐÓNG CỔNG VOTE 🔒";
+                    btnVoteState.style.background = "#d35400";
+                    btnConfirmVote.disabled = false;
+                } else {
+                    btnVoteState.innerText = "MỞ VOTE TREO CỔ 📢";
+                    btnVoteState.style.background = "#e67e22";
+                    btnConfirmVote.disabled = true;
+                }
+            } else {
+                btnConfirmVote.classList.add("hidden");
+            }
+        }
+
         if (data.status === "waiting") {
-            document.getElementById("room-state-text").innerText = `Đang đợi mọi người tập hợp. (Hiện tại: ${readyCount}/${activePlayersCount - 1} sẵn sàng)`;
+            document.getElementById("room-state-text").innerText = `Đang đợi mọi người tập hợp. (Hiện tại: ${readyCount}/${activePlayersCount} người chơi sẵn sàng)`;
             document.getElementById("player-card-area").classList.add("hidden");
+            document.getElementById("btn-toggle-vote-state").classList.add("hidden");
+            document.getElementById("btn-confirm-vote").classList.add("hidden");
             
             if (myCurrentState === "spectator") {
                 myCurrentState = "waiting";
                 const btnReady = document.getElementById("btn-ready-toggle");
                 btnReady.classList.remove("hidden");
-                btnReady.innerText = "SẴN SÀNG";
-                btnReady.className = "btn-ready";
+                btnReady.innerText = "SẴN SÀNG"; btnReady.className = "btn-ready";
             }
 
             if (isHost) {
                 document.getElementById("btn-start-game").classList.remove("hidden");
                 document.getElementById("btn-reset-game").classList.add("hidden");
 
-                const allReady = (readyCount === (activePlayersCount - 1)) && (activePlayersCount >= 4);
+                const allReady = (readyCount === activePlayersCount) && (activePlayersCount >= 4);
                 document.getElementById("btn-start-game").disabled = !allReady;
                 if(activePlayersCount < 4) {
-                    document.getElementById("btn-start-game").innerText = "Cần tối thiểu 4 người để chơi";
+                    document.getElementById("btn-start-game").innerText = `Cần tối thiểu 4 người chơi (Hiện tại: ${activePlayersCount})`;
                 } else {
-                    document.getElementById("btn-start-game").innerText = allReady ? "Bốc Bài & Bắt Đầu Game" : "Đợi mọi người Sẵn Sàng...";
+                    document.getElementById("btn-start-game").innerText = allReady ? "Bốc Bài & Khởi Trận" : "Đợi người chơi Sẵn Sàng...";
                 }
             }
         } else if (data.status === "playing") {
-            document.getElementById("room-state-text").innerText = "Trận đấu đang diễn ra! Phòng đã khóa đăng ký mới.";
+            document.getElementById("room-state-text").innerText = (data.voteStatus === "open") ? "🚨 GIAI ĐOẠN PHỎNG VẤN VÀ BỎ PHIẾU TREO CỔ REALTIME!" : "Trận đấu đang diễn ra! Đêm xuống hoặc đang thảo luận tự do.";
             
             if (isHost) {
                 document.getElementById("btn-start-game").classList.add("hidden");
+                document.getElementById("btn-toggle-vote-state").classList.remove("hidden");
                 document.getElementById("btn-reset-game").classList.remove("hidden");
             }
             
-            if (data.players[myPlayerId] && data.players[myPlayerId].state !== "spectator") {
+            if (data.players[myPlayerId] && !isHost && data.players[myPlayerId].state !== "spectator") {
                 document.getElementById("player-card-area").classList.remove("hidden");
                 const myRoleKey = data.players[myPlayerId].roleKey;
                 if (myRoleKey) {
@@ -453,9 +576,13 @@
         if (isHost) {
             document.getElementById("host-controls").classList.remove("hidden");
             document.getElementById("player-controls").classList.add("hidden"); 
+            document.getElementById("admin-status").innerText = "Chế độ: Chủ Phòng [🎙️ QUẢN TRÒ TRẬN ĐẤU]";
+            document.getElementById("admin-status").style.color = "#6c5ce7";
         } else {
             document.getElementById("host-controls").classList.add("hidden");
             document.getElementById("player-controls").classList.remove("hidden"); 
+            document.getElementById("admin-status").innerText = "Chế độ: Người chơi thông thường";
+            document.getElementById("admin-status").style.color = "#ffca28";
         }
 
         database.ref('rooms/' + currentRoomId).on('value', (snapshot) => {
@@ -474,7 +601,7 @@
             const players = snapshot.val();
             if (!players) return;
 
-            const activePlayerIds = Object.keys(players).filter(id => players[id].state === "ready" || players[id].isHost);
+            const activePlayerIds = Object.keys(players).filter(id => !players[id].isHost && (players[id].state === "ready"));
             const totalPlayers = activePlayerIds.length;
 
             let rolesPool = [];
@@ -505,16 +632,13 @@
                 let desiredGodCount = 3;
                 if (totalPlayers >= 8) desiredGodCount = 4;
                 if (totalPlayers >= 10) desiredGodCount = 5;
-
                 while (rolesPool.filter(r => r !== "wolf" && r !== "wolf_kid").length < desiredGodCount) {
                     let nextGod = godRoles.pop();
                     if (nextGod && nextGod !== "seer") rolesPool.push(nextGod);
                 }
             }
 
-            while (rolesPool.length < totalPlayers) {
-                rolesPool.push("villager");
-            }
+            while (rolesPool.length < totalPlayers) rolesPool.push("villager");
 
             for (let i = rolesPool.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -524,49 +648,59 @@
             let updates = {};
             activePlayerIds.forEach((id, index) => {
                 updates['rooms/' + currentRoomId + '/players/' + id + '/roleKey'] = rolesPool[index];
+                updates['rooms/' + currentRoomId + '/players/' + id + '/votedFor'] = "";
+                updates['rooms/' + currentRoomId + '/players/' + id + '/isDead'] = false; 
             });
+            
+            Object.keys(players).forEach(id => {
+                if(players[id].isHost) {
+                    updates['rooms/' + currentRoomId + '/players/' + id + '/roleKey'] = "Host_QuanTro";
+                    updates['rooms/' + currentRoomId + '/players/' + id + '/isDead'] = false;
+                }
+            });
+
             updates['rooms/' + currentRoomId + '/status'] = "playing";
+            updates['rooms/' + currentRoomId + '/voteStatus'] = "closed";
 
             database.ref().update(updates).then(() => {
-                alert(`🎉 Khởi trận thành công! Bàn gồm ${totalPlayers} người đã được chia bài ngẫu nhiên.`);
+                alert(`🎉 Phát bài thành công!\nĐã chia ẩn bài cho ${totalPlayers} người chơi.\nBạn (Quản Trò) sẽ giám sát toàn bộ danh tính bài ẩn của họ trên màn hình.`);
             });
         });
     }
 
     function resetGameFirebase() {
         if (!confirm("Bạn có chắc chắn muốn kết thúc ván để chơi trận mới?")) return;
-
         database.ref('rooms/' + currentRoomId + '/players').once('value', (snapshot) => {
             const players = snapshot.val();
             if (!players) return;
 
             let updates = {};
             Object.keys(players).forEach((id) => {
-                updates['rooms/' + currentRoomId + '/players/' + id + '/roleKey'] = "";
-                updates['rooms/' + currentRoomId + '/players/' + id + '/state'] = players[id].isHost ? "ready" : "waiting";
+                updates['rooms/' + currentRoomId + '/players/' + id + '/roleKey'] = players[id].isHost ? "Host_QuanTro" : "";
+                updates['rooms/' + currentRoomId + '/players/' + id + '/state'] = players[id].isHost ? "host" : "waiting";
+                updates['rooms/' + currentRoomId + '/players/' + id + '/votedFor'] = "";
+                updates['rooms/' + currentRoomId + '/players/' + id + '/isDead'] = false;
             });
             updates['rooms/' + currentRoomId + '/status'] = "waiting";
+            updates['rooms/' + currentRoomId + '/voteStatus'] = "closed";
 
             database.ref().update(updates).then(() => {
-                alert("🔄 Phòng đã được thiết lập lại về trạng thái chờ!");
+                alert("🔄 Phòng đã được Quản Trò đưa về trạng thái chờ lập bàn mới!");
             });
         });
     }
 
     function promptAdminCode() {
-        let codeInput = prompt("Nhập mã Quản Trò để bật Mắt Thần:");
+        let codeInput = prompt("Nhập mã kích hoạt Mắt Thần Cheat Bài:");
         if (codeInput === SECRET_ADMIN_CODE) {
             isAdminActive = true;
-            document.getElementById("admin-status").innerText = "👁️ CHẾ ĐỘ QUẢN TRÒ: BẬT";
+            document.getElementById("admin-status").innerText = "👁️ MẮT THẦN GIAN LẬN: ĐANG BẬT";
             document.getElementById("admin-status").style.color = "#2ecc71";
-            alert("Bật mắt thần quản trò thành công!");
+            alert("Mắt thần đã mở rộng! Dành cho người chơi muốn cheat bài.");
         } else {
             isAdminActive = false;
-            document.getElementById("admin-status").innerText = "Chế độ: Người chơi thông thường";
-            document.getElementById("admin-status").style.color = "#ffca28";
-            alert("Mã sai, chế độ quản trò đã tắt.");
+            alert("Mã sai!");
         }
-        
         if (currentRoomId) {
             database.ref('rooms/' + currentRoomId).once('value', (snapshot) => {
                 const data = snapshot.val();
@@ -575,6 +709,7 @@
         }
     }
 
+    // Nhấn giữ xem bài ẩn
     function showCard() { document.getElementById("card-display").style.display = "block"; }
     function hideCard() { document.getElementById("card-display").style.display = "none"; }
 </script>
