@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trợ Lý Chia Bài Ma Sói Realtime v3.3</title>
+    <title>Trợ Lý Chia Bài Ma Sói Realtime v3.5</title>
     <style>
         body { font-family: Arial, sans-serif; background: #1a1a2e; color: #fff; text-align: center; padding: 20px; margin: 0; }
         .container { max-width: 500px; margin: 20px auto; background: #162447; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5); position: relative; }
         
-        .admin-tool-icon { position: absolute; top: 15px; right: 15px; font-size: 24px; cursor: pointer; background: rgba(255, 255, 255, 0.1); padding: 5px 8px; border-radius: 50%; transition: 0.3s; }
+        .admin-tool-icon { position: absolute; top: 15px; right: 15px; font-size: 24px; cursor: pointer; background: rgba(255, 255, 255, 0.1); padding: 5px 8px; border-radius: 50%; transition: 0.3s; z-index: 10; }
         .admin-tool-icon:hover { background: rgba(255, 255, 255, 0.3); transform: rotate(45deg); }
+
+        /* Thiết kế nút Rời phòng mới: Đẹp, gọn gàng, đặt ở khu điều khiển bên dưới */
+        .btn-leave-room { background: #34495e; color: #fff; border: 1px solid #415b76; padding: 10px 20px; margin-top: 10px; border-radius: 5px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; box-sizing: border-box; }
+        .btn-leave-room:hover { background: #e74c3c; border-color: #e74c3c; }
 
         button { color: white; border: none; padding: 12px 20px; margin: 8px 0; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; box-sizing: border-box; }
         .btn-main { background: #e43f5a; }
@@ -36,7 +40,7 @@
         
         .hidden { display: none; }
         .badge { padding: 4px 10px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-left: 5px; display: inline-block; }
-        .badge-me { background: #3498db; color: #fff; } /* Định dạng cho nhãn Bản thân */
+        .badge-me { background: #3498db; color: #fff; } 
         .badge-host { background: #e43f5a; color: #fff; }
         .badge-ready { background: #2ecc71; color: #fff; }
         .badge-waiting { background: #7f8c8d; color: #fff; }
@@ -69,6 +73,7 @@
     </div>
 
     <div id="screen-room" class="hidden">
+
         <h3>Mã Phòng: <span id="room-id-display" style="color:#e43f5a;">xxxx</span></h3>
         <p id="room-state-text" style="font-style: italic; color: #aaa; font-size: 13px;"></p>
         
@@ -83,6 +88,8 @@
             <button id="btn-start-game" class="btn-ready" onclick="startDealingFirebase()" disabled>Bắt Đầu Game (Đợi mọi người sẵn sàng)</button>
             <button id="btn-reset-game" class="btn-reset hidden" onclick="resetGameFirebase()">CHƠI VÁN MỚI 🔄</button>
         </div>
+
+        <button class="btn-leave-room" onclick="leaveRoom()">🏃‍♂️ Rời Khỏi Phòng</button>
 
         <hr style="border: 0; border-top: 1px dashed #444; margin: 20px 0;">
 
@@ -220,6 +227,31 @@
         }
     }
 
+    function leaveRoom() {
+        if (!currentRoomId || !myPlayerId) return;
+        
+        if (confirm("Bạn có chắc chắn muốn rời khỏi phòng này không?")) {
+            database.ref('rooms/' + currentRoomId).off();
+
+            database.ref('rooms/' + currentRoomId + '/players/' + myPlayerId).remove().then(() => {
+                currentRoomId = "";
+                isHost = false;
+                myCurrentState = "waiting";
+
+                window.history.pushState({}, '', window.location.pathname);
+
+                document.getElementById("screen-room").classList.add("hidden");
+                document.getElementById("screen-login").classList.remove("hidden");
+                document.getElementById("login-title").innerText = "Cấu hình thông tin bàn chơi";
+                document.getElementById("input-room-id").value = "";
+                
+                const btnReady = document.getElementById("btn-ready-toggle");
+                btnReady.innerText = "SẴN SÀNG";
+                btnReady.className = "btn-ready";
+            });
+        }
+    }
+
     function toggleReady() {
         if (isHost || myCurrentState === "spectator") return;
 
@@ -236,7 +268,6 @@
         database.ref('rooms/' + currentRoomId + '/players/' + myPlayerId + '/state').set(myCurrentState);
     }
 
-    // TỐI ƯU HIỂN THỊ DANH SÁCH - THÊM BADGE CHỮ (BẠN)
     function renderPlayerListUI(data) {
         const playerListUl = document.getElementById("player-list");
         playerListUl.innerHTML = "";
@@ -252,15 +283,12 @@
                 
                 let li = document.createElement("li");
                 
-                // Hiển thị tên người chơi
                 let nameSpan = document.createElement("span");
                 nameSpan.innerText = p.name;
                 li.appendChild(nameSpan);
 
-                // KHU VỰC CHỨA CÁC NHÃN (BADGES)
                 let badgeGroup = document.createElement("div");
 
-                // KIỂM TRA: Nếu ID trùng khớp với máy hiện tại -> Gắn nhãn Bản thân
                 if (key === myPlayerId) {
                     let bMe = document.createElement("span"); 
                     bMe.className = "badge badge-me"; 
