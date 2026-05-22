@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trợ Lý Chia Bài Ma Sói Realtime v3.2</title>
+    <title>Trợ Lý Chia Bài Ma Sói Realtime v3.3</title>
     <style>
         body { font-family: Arial, sans-serif; background: #1a1a2e; color: #fff; text-align: center; padding: 20px; margin: 0; }
         .container { max-width: 500px; margin: 20px auto; background: #162447; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.5); position: relative; }
@@ -35,7 +35,8 @@
         .card-detail { font-size: 14px; line-height: 1.5; color: #eeeeee; background: #393e46; padding: 10px; border-radius: 5px; }
         
         .hidden { display: none; }
-        .badge { padding: 4px 10px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-left: 5px; }
+        .badge { padding: 4px 10px; border-radius: 10px; font-size: 12px; font-weight: bold; margin-left: 5px; display: inline-block; }
+        .badge-me { background: #3498db; color: #fff; } /* Định dạng cho nhãn Bản thân */
         .badge-host { background: #e43f5a; color: #fff; }
         .badge-ready { background: #2ecc71; color: #fff; }
         .badge-waiting { background: #7f8c8d; color: #fff; }
@@ -43,7 +44,6 @@
         .badge-hidden { background: #34495e; color: #bdc3c7; }
         
         input[type="text"], input[type="number"] { width: 100%; padding: 12px; margin: 8px 0; border-radius: 5px; border: 1px solid #1f4068; background: #1a1a2e; color: #fff; font-size: 16px; box-sizing: border-box; }
-        /* Xóa mũi tên tăng giảm của input number */
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 
@@ -138,7 +138,6 @@
         "villager": { name: "Dân Làng 🧑‍🌾", isWolfPhe: false, desc: "<b>• Phe:</b> Dân làng<br>• Đêm đi ngủ, ngày tích cực thảo luận, biểu quyết treo cổ kẻ tình nghi." }
     };
 
-    // Kiểm tra link mời điều hướng tự động
     const urlParams = new URLSearchParams(window.location.search);
     const roomIdParam = urlParams.get('room');
 
@@ -159,7 +158,6 @@
         myPlayerId = "p_" + Math.random().toString(36).substr(2, 9);
 
         if (isCreatingNew) {
-            // HÀNH ĐỘNG TẠO PHÒNG MỚI
             currentRoomId = Math.floor(1000 + Math.random() * 9000).toString();
             isHost = true;
             myCurrentState = "ready";
@@ -178,7 +176,6 @@
                 initRoomListener();
             });
         } else {
-            // HÀNH ĐỘNG TRUY CẬP VÀO SỐ PHÒNG CÓ SẴN
             if (!roomIdInput) {
                 alert("Vui lòng nhập số phòng muốn tham gia!");
                 return;
@@ -189,7 +186,7 @@
                 const roomData = snapshot.val();
                 
                 if (!roomData) {
-                    alert("Phòng số " + currentRoomId + " không tồn tại hoặc đã bị hủy! Hãy bấm nút Tạo Phòng Mới.");
+                    alert("Phòng số " + currentRoomId + " không tồn tại hoặc đã bị hủy!");
                     return;
                 }
 
@@ -200,7 +197,6 @@
                     myCurrentState = "waiting";
                 }
 
-                // Nếu phòng cũ bị mất Host vì lý do gì đó, người vào đầu tiên nhận lại quyền Host
                 if (!roomData.players || Object.keys(roomData.players).length === 0) {
                     isHost = true;
                     myCurrentState = "ready";
@@ -240,6 +236,7 @@
         database.ref('rooms/' + currentRoomId + '/players/' + myPlayerId + '/state').set(myCurrentState);
     }
 
+    // TỐI ƯU HIỂN THỊ DANH SÁCH - THÊM BADGE CHỮ (BẠN)
     function renderPlayerListUI(data) {
         const playerListUl = document.getElementById("player-list");
         playerListUl.innerHTML = "";
@@ -254,9 +251,22 @@
                 const p = data.players[key];
                 
                 let li = document.createElement("li");
-                li.innerText = p.name;
+                
+                // Hiển thị tên người chơi
+                let nameSpan = document.createElement("span");
+                nameSpan.innerText = p.name;
+                li.appendChild(nameSpan);
 
+                // KHU VỰC CHỨA CÁC NHÃN (BADGES)
                 let badgeGroup = document.createElement("div");
+
+                // KIỂM TRA: Nếu ID trùng khớp với máy hiện tại -> Gắn nhãn Bản thân
+                if (key === myPlayerId) {
+                    let bMe = document.createElement("span"); 
+                    bMe.className = "badge badge-me"; 
+                    bMe.innerText = "Bạn"; 
+                    badgeGroup.appendChild(bMe);
+                }
 
                 if (p.isHost) {
                     let b = document.createElement("span"); b.className = "badge badge-host"; b.innerText = "Chủ Bàn"; badgeGroup.appendChild(b);
